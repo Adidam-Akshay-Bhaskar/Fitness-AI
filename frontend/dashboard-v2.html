@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITFUTURE | GENESIS_PROTOCOL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/kinetic-noir.css">
+    <link rel="stylesheet" href="assets/css/noir-dashboard.css">
+    <style>
+        :root {
+            --noir-accent: #d4ff00;
+            --noir-bg: #050507;
+            --noir-card: rgba(15, 15, 18, 0.6);
+            --noir-border: rgba(255, 255, 255, 0.05);
+            --noir-glass: blur(30px);
+        }
+
+        body.noir-dashboard {
+            background-color: var(--noir-bg);
+            color: white;
+            overflow-x: hidden;
+            padding-bottom: 80px; 
+            transition: background 1s ease;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        body.noir-dashboard::-webkit-scrollbar {
+            display: none;
+        }
+
+        body.noir-dashboard::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212, 255, 0, 0.03) 0%, transparent 60%),
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.005) 0px, rgba(255,255,255,0.005) 1px, transparent 1px, transparent 3px);
+            background-size: 100% 100%, 100% 4px;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
+        .dashboard-view {
+            display: none;
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .dashboard-view.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* XP BAR IN HEADER */
+        .header-xp-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            width: 200px;
+            margin: 0 2rem;
+        }
+
+        .xp-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.55rem;
+            font-weight: 950;
+            letter-spacing: 1.5px;
+            color: var(--noir-accent);
+            text-transform: uppercase;
+        }
+
+        .xp-track {
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: var(--noir-accent);
+            box-shadow: 0 0 15px var(--noir-accent);
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .user-avatar-mini {
+            width: 50px;
+            height: 50px;
+            background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=200') center/cover;
+            border-radius: 12px;
+            border: 2px solid var(--noir-accent);
+            box-shadow: 0 0 20px rgba(212, 255, 0, 0.2);
+            transition: 0.3s;
+        }
+
+        .header-user:hover .user-avatar-mini {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px var(--noir-accent);
+        }
+
+        .header-user:hover h4 {
+            color: var(--noir-accent);
+        }
+
+        .armory-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            gap: 2rem;
+        }
+
+        .armory-filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .armory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .exercise-card {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            height: 420px;
+            overflow: hidden;
+            border: 1px solid var(--noir-border);
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            perspective: 1000px;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(2deg);
+            border-color: var(--noir-accent);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 20px rgba(212, 255, 0, 0.1);
+        }
+
+        .exercise-card-img {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.7;
+            transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 1;
+        }
+
+        .exercise-card:hover .exercise-card-img {
+            transform: scale(1.15) rotate(-2deg);
+            opacity: 0.4;
+        }
+
+        .exercise-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+            z-index: 2;
+        }
+
+        .exercise-card-content {
+            position: relative;
+            z-index: 5;
+            padding: 2.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .exercise-card-meta {
+            font-size: 0.6rem;
+            font-weight: 950;
+            color: var(--noir-accent);
+            letter-spacing: 2px;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .exercise-card-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .exercise-card-desc {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .exercise-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1.5rem;
+        }
+
+        .difficulty-indicator {
+            display: flex;
+            gap: 4px;
+        }
+
+        .difficulty-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .difficulty-dot.active {
+            background: var(--noir-accent);
+            box-shadow: 0 0 10px var(--noir-accent);
+        }
+
+        /* ─── ARMORY FILTERS ─── */
+        .armory-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .armory-filters {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            scrollbar-width: none;
+        }
+
+        .filter-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--noir-border);
+            color: var(--noir-text-dim);
+            padding: 1rem 2rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: var(--noir-accent);
+            color: black;
+            border-color: var(--noir-accent);
+            box-shadow: 0 0 20px rgba(212, 255, 0, 0.2);
+        }
+
+        .armory-search {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .armory-search input {
+            width: 100%;
+            background: var(--noir-input);
+            border: 1px solid var(--noir-border);
+            color: white;
+            padding: 1rem 1.5rem 1rem 3rem;
+            border-radius: 12px;
+            font-weight: 700;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .armory-search input:focus {
+            border-color: var(--noir-accent);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .armory-search i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--noir-text-dim);
+            z-index: 5;
+        }
+
+        .armory-grid {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
+            gap: 2rem !important;
+            margin-top: 3rem !important;
+            width: 100% !important;
+        }
+
+        .exercise-card {
+            background: var(--noir-card);
+            border: 1px solid var(--noir-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            cursor: pointer;
+            position: relative;
+            height: 350px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .exercise-card:hover {
+            border-color: var(--noir-accent);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(212, 255, 0, 0.1);
+        }
+
+        .exercise-card-img {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-size: cover !important;
+            background-position: center !important;
+            z-index: 1 !important;
+            transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .exercise-card:hover .exercise-card-img {
+            transform: scale(1.1);
+        }
+
+        .exercise-card-overlay {
+            position: absolute !important;
+            inset: 0 !important;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 40%, transparent 100%) !important;
+            z-index: 2 !important;
+        }
+
+        .exercise-card-content {
+            position: relative !important;
+            z-index: 5 !important;
+            padding: 2rem !important;
+        }
+
+        .exercise-type-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(212, 255, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--noir-accent);
+            color: var(--noir-accent);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.6rem;
+            font-weight: 900;
+            z-index: 3;
+        }
+        .typing-text::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+            color: var(--noir-accent);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="noir-dashboard">
+    <div class="noir-header">
+        <div class="header-user" onclick="openCustomizer()" style="cursor:pointer;">
+            <div class="user-avatar-mini"></div>
+            <div class="user-welcome">
+                <span id="commander-rank">Welcome back, Recruit</span>
+                <h4 id="userNameHeader">LOADING_IDENT... <i class="fas fa-edit" style="font-size:0.7rem; opacity:0.5; margin-left:0.5rem;"></i></h4>
+            </div>
+        </div>
+
+        <div class="header-xp-container">
+            <div class="xp-label">
+                <span>LVL <span id="hud-level">1</span></span>
+                <span id="hud-xp-text">0 / 1000</span>
+            </div>
+            <div class="xp-track">
+                <div id="hud-xp-fill" class="xp-fill"></div>
+            </div>
+            <div style="font-size: 0.45rem; color: rgba(255,255,255,0.3); font-weight: 800; text-align: center; letter-spacing: 1px;">RANK: <span id="hud-rank" style="color:white;">RECRUIT</span></div>
+        </div>
+
+        <div class="noir-brand">FITFUTURE<span>.GENESIS</span></div>
+        <div class="header-actions">
+            <i class="fas fa-cog" onclick="openCustomizer()" style="cursor:pointer;"></i>
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-sign-out-alt" onclick="logout()" style="cursor:pointer;"></i>
+        </div>
+    </div>
+
+    <div class="noir-content">
+        <!-- HOME VIEW -->
+        <div id="view-home" class="dashboard-view active">
+            <div class="hero-text">
+                <h1>GENESIS<br><span id="hero-title">PROTOCOL</span></h1>
+                <div class="hero-badges">
+                    <div class="badge-tactical"><i class="fas fa-sync"></i> REAL-TIME SYNC: ACTIVE</div>
+                    <div class="badge-tactical"><i class="fas fa-shield-alt"></i> STATUS: OPTIMAL</div>
+                </div>
+            </div>
+
+            <div class="noir-main-grid">
+                <div class="hero-card">
+                    <div id="hero-bg" class="hero-card-bg" style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=1000');"></div>
+                    <div class="hero-card-overlay"></div>
+                    <div class="hero-card-content">
+                        <span>CURRENT PROTOCOL</span>
+                        <h2 id="hero-protocol-display">ACTIVE_SESSION</h2>
+                        <p id="hero-detail">SYSTEM CALIBRATING...</p>
+                        <div style="display:flex; gap:1rem; margin-top:2rem;">
+                            <button onclick="startWorkout()" class="btn-neon">INITIALIZE_SESSION</button>
+                            <button onclick="openProtocolModal()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; padding:1rem 2rem; border-radius:4px; font-weight:900; text-transform:uppercase; cursor:pointer;">CHANGE_PROTOCOL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-sidebar">
+                    <div class="stats-card">
+                        <div class="stats-info">
+                            <h5>CALORIES_IN</h5>
+                            <div class="stats-value" id="stat-calories">0 <span>kcal</span></div>
+                        </div>
+                        <i class="fas fa-fire-alt" style="color:#ff4d4d; font-size:1.5rem;"></i>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-info">
+                            <h5>CALORIES_OUT</h5>
+                            <div class="stats-value" id="stat-active">0 <span>kcal</span></div>
+                        </div>
+                        <i class="fas fa-bolt" style="color:var(--noir-accent); font-size:1.5rem;"></i>
+                    </div>
+                    
+                    <div class="live-feed-card" style="background:var(--noir-card); border-radius:12px; border:1px solid var(--noir-border); padding:1.5rem; flex:1; display:flex; flex-direction:column;">
+                        <h5 style="color:var(--noir-text-dim); font-size:0.6rem; letter-spacing:2px; margin-bottom:1rem; display:flex; justify-content:space-between;">
+                            LIVE_ACTIVITY_FEED
+                            <span class="badge-tactical" style="padding:0.1rem 0.4rem; font-size:0.4rem;">STREAMING</span>
+                        </h5>
+                        <div id="activity-feed" style="display:flex; flex-direction:column; gap:0.8rem; overflow-y:auto; max-height:150px;">
+                            <!-- Injected by JS -->
+                            <div style="font-size:0.7rem; opacity:0.3; text-align:center; padding:1rem;">WAITING_FOR_DATA_PACKETS...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="utility-grid">
+                <div class="util-card" onclick="switchView('armory')">
+                    <i class="fas fa-dumbbell"></i>
+                    <h4>THE_ARMORY</h4>
+                    <p>EXERCISE_LIB</p>
+                </div>
+                <div class="util-card" onclick="switchView('arnold')">
+                    <i class="fas fa-robot"></i>
+                    <h4>ARNOLD_AI</h4>
+                    <p>TACTICAL COACH</p>
+                </div>
+                <div class="util-card" onclick="switchView('nutrition')">
+                    <i class="fas fa-utensils"></i>
+                    <h4>FUEL_LOG</h4>
+                    <p>MACRO_TRACKER</p>
+                </div>
+                <div class="util-card" onclick="switchView('stats')">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>PERFORMANCE</h4>
+                    <p>BIO_ANALYTICS</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARMORY VIEW -->
+        <div id="view-armory" class="dashboard-view">
+            <div class="hero-text">
+                <h1>THE<br><span>ARMORY</span></h1>
+                <p style="color:var(--noir-text-dim); font-size:0.7rem; letter-spacing:4px; font-weight:900;">CENTRALIZED_EXERCISE_DATABASE</p>
+            </div>
+            
+            <div class="armory-controls">
+                <div class="armory-filters" id="armory-muscle-filters">
+                    <button class="filter-btn active" onclick="filterByMuscle('ALL')">ALL_MNS</button>
+                    <button class="filter-btn" onclick="filterByMuscle('Chest')">CHEST</button>
+                    <button class="filter-btn" onclick="filterByMuscle('Back')">BACK</button>
+                    <button class="filter-btn" onclick="filterByMuscle('Legs')">LEGS</button>
+                    <button class="filter-btn" onclick="filterByMuscle('Biceps')">BICEPS</button>
+                    <button class="filter-btn" onclick="filterByMuscle('Triceps')">TRICEPS</button>
+                </div>
+                <div style="display:flex; gap:1.5rem; align-items:center;">
+                    <div class="armory-search" style="flex:1;">
+                        <i class="fas fa-search" style="position:absolute; left:1.5rem; top:50%; transform:translateY(-50%); color:var(--noir-accent);"></i>
+                        <input type="text" id="armory-search-input" placeholder="SCAN_EXERCISE_DATABASE..." oninput="searchArmory()" style="width:100%; padding:1.2rem 1.5rem 1.2rem 3.5rem; background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); border-radius:15px; color:white; font-weight:700; outline:none; transition:0.3s;">
+                    </div>
+                    <div style="display:flex; gap:0.5rem; color:var(--noir-text-dim); font-size:0.6rem; font-weight:900; letter-spacing:1px; text-transform:uppercase;">
+                        <span>SCAN_STATUS:</span>
+                        <span style="color:var(--noir-accent);">CONNECTED</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="armory-container" class="armory-grid">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <!-- ARNOLD AI VIEW -->
+        <div id="view-arnold" class="dashboard-view">
+            <!-- Content will be injected by JS -->
+        </div>
+
+        <!-- NUTRITION VIEW -->
+        <div id="view-nutrition" class="dashboard-view">
+            <div class="trend-card" style="padding:0; overflow:hidden; border:none; background:transparent;">
+                <iframe id="fuel-frame" src="nutrition.html" style="width:100%; height:1800px; border:none; border-radius:24px;" scrolling="no"></iframe>
+            </div>
+        </div>
+
+        <!-- STATS VIEW -->
+        <div id="view-stats" class="dashboard-view">
+            <div class="hero-text">
+                <h1>BIO<br><span>METRICS</span></h1>
+            </div>
+            <div class="trend-card" style="padding:0; overflow:hidden; border:none; background:transparent;">
+                <iframe src="stats.html" style="width:100%; height:2200px; border:none; border-radius:24px;" scrolling="no"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="noir-bottom-nav">
+        <a href="javascript:void(0)" class="nav-tab active" data-tab="home" onclick="switchView('home')">
+            <i class="fas fa-th-large"></i>
+            <span>DASH</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-tab" data-tab="armory" onclick="switchView('armory')">
+            <i class="fas fa-dumbbell"></i>
+            <span>ARMORY</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-tab" data-tab="arnold" onclick="switchView('arnold')">
+            <i class="fas fa-brain"></i>
+            <span>ARNOLD</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-tab" data-tab="nutrition" onclick="switchView('nutrition')">
+            <i class="fas fa-apple-alt"></i>
+            <span>FUEL</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-tab" data-tab="stats" onclick="switchView('stats')">
+            <i class="fas fa-heartbeat"></i>
+            <span>STATS</span>
+        </a>
+    </div>
+
+    <!-- MODALS -->
+    <div id="protocolModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); backdrop-filter:blur(30px); z-index:2000; display:none; flex-direction:column; padding:4rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4rem;">
+            <h2 style="font-size:3rem; font-weight:900;">SELECT_PROTOCOL</h2>
+            <i class="fas fa-times" onclick="closeProtocolModal()" style="font-size:2rem; cursor:pointer;"></i>
+        </div>
+        <div id="protocolSelectionGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:2rem; overflow-y:auto; padding-bottom:4rem;">
+            <!-- Injected by JS -->
+        </div>
+    </div>
+
+    <div id="sessionLoggerModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); backdrop-filter:blur(30px); z-index:2100; display:none; align-items:center; justify-content:center; padding:2rem;">
+        <div style="background:var(--noir-card); width:100%; max-width:500px; border-radius:24px; padding:3rem; border:1px solid var(--noir-border);">
+            <h2 id="log-protocol-title" style="font-size:2rem; margin-bottom:1.5rem;">PROTOCOL_LOG</h2>
+            <div class="form-group">
+                <label style="display:block; font-size:0.7rem; color:var(--noir-text-dim); margin-bottom:1rem; letter-spacing:2px;">SESSION_DURATION (MINUTES)</label>
+                <input type="number" id="log-duration" value="45" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1.5rem; width:100%; border-radius:12px; font-size:1.5rem; font-weight:900; outline:none;">
+            </div>
+            <button onclick="submitSessionLog()" class="btn-neon" style="width:100%; margin-top:2rem;">COMMIT_DATA</button>
+            <button onclick="closeSessionLog()" style="width:100%; margin-top:1rem; background:transparent; border:none; color:var(--noir-text-dim); cursor:pointer;">ABORT_MISSION</button>
+        </div>
+    </div>
+
+    <!-- EXERCISE INSPECTION MODAL -->
+    <div id="exerciseDetailModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); backdrop-filter:blur(50px); z-index:3000; display:none; align-items:center; justify-content:center; padding:2rem;">
+        <div style="background:var(--noir-card); width:100%; max-width:1100px; border-radius:32px; overflow:hidden; border:1px solid var(--noir-border); display:grid; grid-template-columns: 1.2fr 1fr; position:relative; box-shadow:0 50px 100px rgba(0,0,0,0.8);">
+            <div id="ex-detail-img" style="background-size:cover; background-position:center; position:relative; min-height:650px;">
+                <div style="position:absolute; inset:0; background:linear-gradient(to right, transparent, rgba(5,5,5,1));"></div>
+                <div style="position:absolute; bottom:3rem; left:3rem; z-index:10;">
+                    <span id="ex-detail-type" style="background:var(--noir-accent); color:black; padding:0.5rem 1rem; border-radius:4px; font-size:0.7rem; font-weight:900; letter-spacing:2px; text-transform:uppercase;">STRENGTH</span>
+                </div>
+            </div>
+            <div style="padding:4rem; display:flex; flex-direction:column; gap:2rem; background:rgba(5,5,5,0.8);">
+                <i class="fas fa-times" onclick="closeExerciseDetail()" style="position:absolute; top:2rem; right:2rem; font-size:1.5rem; cursor:pointer; color:var(--noir-text-dim); transition:0.3s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--noir-text-dim)'"></i>
+                <div>
+                    <h2 id="ex-detail-name" style="font-size:3.5rem; font-weight:900; line-height:0.9; margin-bottom:1rem; text-transform:uppercase;">NEURAL_OVERDRIVE</h2>
+                    <p id="ex-detail-muscle" style="color:var(--noir-accent); font-weight:900; letter-spacing:2px; font-size:0.8rem; text-transform:uppercase;">CHEST | DUMBBELLS</p>
+                </div>
+                <p id="ex-detail-desc" style="font-size:1.1rem; line-height:1.7; color:rgba(255,255,255,0.6);">Advanced neural activation sequence focusing on pectoral hypertrophy through controlled kinetic displacement.</p>
+                
+                <div id="ex-detail-steps-container" style="display:flex; flex-direction:column; gap:0.8rem; margin:1rem 0;">
+                    <h4 style="font-size:0.6rem; color:var(--noir-text-dim); letter-spacing:2px; text-transform:uppercase;">EXECUTION_STEPS</h4>
+                    <ul id="ex-detail-steps" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.6rem;">
+                        <!-- Steps injected -->
+                    </ul>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:1rem;">
+                    <div style="padding:1.5rem; background:rgba(255,255,255,0.03); border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">DIFFICULTY_RATING</h4>
+                        <div id="ex-detail-diff" style="display:flex; gap:6px;">
+                            <!-- Dots injected -->
+                        </div>
+                    </div>
+                    <div style="padding:1.5rem; background:rgba(255,255,255,0.03); border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+                        <h4 style="font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">XP_REWARD</h4>
+                        <div id="ex-detail-xp" style="font-size:1.2rem; font-weight:900; color:var(--noir-accent);">+500 XP</div>
+                    </div>
+                </div>
+
+                <button onclick="startWorkoutFromDetail()" class="btn-neon" style="width:100%; margin-top:2rem; padding:1.5rem;">INITIALIZE_PROTOCOL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mealLoggerModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); backdrop-filter:blur(30px); z-index:2200; display:none; align-items:center; justify-content:center; padding:2rem;">
+        <div style="background:var(--noir-card); width:100%; max-width:550px; border-radius:24px; padding:3rem; border:1px solid var(--noir-border);">
+            <h2 style="font-size:2rem; margin-bottom:1.5rem;">FUEL_SEQUENCE_LOG</h2>
+            <div style="display:grid; gap:1.5rem;">
+                <div class="form-group">
+                    <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">MEAL_IDENTIFIER (e.g. BREAKFAST)</label>
+                    <input type="text" id="meal-name" placeholder="INITIATE NAME..." style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:8px; font-weight:700;">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">ENERGY (KCAL)</label>
+                        <input type="number" id="meal-kcal" value="500" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:8px; font-weight:700;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">PROTEIN (G)</label>
+                        <input type="number" id="meal-protein" value="30" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:8px; font-weight:700;">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">CARBS (G)</label>
+                        <input type="number" id="meal-carbs" value="50" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:8px; font-weight:700;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">FATS (G)</label>
+                        <input type="number" id="meal-fats" value="15" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:8px; font-weight:700;">
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:2.5rem;">
+                <button onclick="submitMealLog()" class="btn-neon" style="flex:1;">COMMIT_TO_MATRIX</button>
+                <button onclick="closeMealLog()" style="background:transparent; border:1px solid var(--noir-border); color:white; padding:1rem 2rem; border-radius:12px; font-weight:700; cursor:pointer;">ABORT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customizerModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); backdrop-filter:blur(40px); z-index:3000; display:none; flex-direction:column; padding:4rem; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4rem; max-width:1200px; margin-inline:auto; width:100%;">
+            <h2 style="font-size:3rem; font-weight:900;">INTERFACE_CORE</h2>
+            <i class="fas fa-times" onclick="closeCustomizer()" style="font-size:2rem; cursor:pointer;"></i>
+        </div>
+        
+        <div style="max-width:1200px; margin:0 auto; width:100%; display:grid; grid-template-columns: 1fr 1fr; gap:4rem;">
+            <!-- PERSONALIZATION -->
+            <div class="sidebar-card" style="text-align:left;">
+                <h3 style="color:var(--noir-accent); font-size:0.8rem; letter-spacing:2px; margin-bottom:2rem;">BIOMETRIC_IDENTIFIER</h3>
+                <div style="display:grid; gap:1.5rem;">
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">FULL_NAME</label>
+                        <input type="text" id="cust-name" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1.2rem; width:100%; border-radius:12px; font-weight:700; font-size:1.1rem; outline:none;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">ENCRYPTED_CHANNEL (EMAIL)</label>
+                        <input type="email" id="cust-email" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1.2rem; width:100%; border-radius:12px; font-weight:700; opacity:0.5; pointer-events:none;">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">HEIGHT (CM)</label>
+                            <input type="number" id="cust-height" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:12px; font-weight:700;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">WEIGHT (KG)</label>
+                            <input type="number" id="cust-weight" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1rem; width:100%; border-radius:12px; font-weight:700;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block; font-size:0.6rem; color:var(--noir-text-dim); margin-bottom:0.8rem; letter-spacing:2px;">MISSION_OBJECTIVE (GOAL)</label>
+                        <select id="cust-goal" style="background:rgba(255,255,255,0.03); border:1px solid var(--noir-border); color:white; padding:1.2rem; width:100%; border-radius:12px; font-weight:700; font-size:1rem; outline:none; appearance:none;">
+                            <option value="BUILD_MUSCLE">BUILD_MUSCLE</option>
+                            <option value="FAT_LOSS">FAT_LOSS</option>
+                            <option value="STRENGTH">STRENGTH</option>
+                            <option value="ENDURANCE">ENDURANCE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3 style="color:var(--noir-accent); font-size:0.8rem; letter-spacing:2px; margin-top:3rem; margin-bottom:2rem;">TACTICAL_AVATAR</h3>
+                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:1rem;" id="avatar-grid">
+                    <!-- Preset avatars -->
+                    <div class="avatar-option" onclick="selectAvatar('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=200')" style="background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=200'); width:60px; height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent;"></div>
+                    <div class="avatar-option" onclick="selectAvatar('https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&q=80&w=200')" style="background-image:url('https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&q=80&w=200'); width:60px; height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent;"></div>
+                    <div class="avatar-option" onclick="selectAvatar('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=200')" style="background-image:url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=200'); width:60px; height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent;"></div>
+                    <div class="avatar-option" onclick="selectAvatar('https://images.unsplash.com/photo-1583454110551-21f2fa2adfcd?auto=format&fit=crop&q=80&w=200')" style="background-image:url('https://images.unsplash.com/photo-1583454110551-21f2fa2adfcd?auto=format&fit=crop&q=80&w=200'); width:60px; height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent;"></div>
+                    <div class="avatar-option" onclick="selectAvatar('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=200')" style="background-image:url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=200'); width:60px; height:60px; border-radius:12px; cursor:pointer; border:2px solid transparent;"></div>
+                </div>
+                <input type="hidden" id="selected-avatar-url" value="">
+                
+                <button onclick="savePersonalization()" class="btn-neon" style="width:100%; margin-top:3rem;">COMMIT_PERSONALIZATION</button>
+            </div>
+
+            <!-- THEME & HUD -->
+            <div class="sidebar-card" style="text-align:left;">
+                <h3 style="color:var(--noir-accent); font-size:0.8rem; letter-spacing:2px; margin-bottom:2rem;">HUD_CALIBRATION</h3>
+                <div style="display:grid; grid-template-columns: 1fr; gap:2rem;">
+                    <div onclick="setTheme('neon')" style="background:linear-gradient(45deg, #d4ff0033, #000); padding:2rem; border-radius:16px; cursor:pointer; border:1px solid var(--noir-border);" id="theme-neon-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="color:white; font-size:1.1rem; margin:0;">CYBER_NEON</h3>
+                            <div style="width:20px; height:20px; background:#d4ff00; border-radius:50%; box-shadow:0 0 10px #d4ff00;"></div>
+                        </div>
+                    </div>
+                    <div onclick="setTheme('midnight')" style="background:linear-gradient(45deg, #ff444433, #000); padding:2rem; border-radius:16px; cursor:pointer; border:1px solid var(--noir-border);" id="theme-midnight-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="color:white; font-size:1.1rem; margin:0;">MIDNIGHT_NOIR</h3>
+                            <div style="width:20px; height:20px; background:#ff4444; border-radius:50%; box-shadow:0 0 10px #ff4444;"></div>
+                        </div>
+                    </div>
+                    <div onclick="setTheme('arctic')" style="background:linear-gradient(45deg, #00ffff33, #000); padding:2rem; border-radius:16px; cursor:pointer; border:1px solid var(--noir-border);" id="theme-arctic-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="color:white; font-size:1.1rem; margin:0;">ARCTIC_FORCE</h3>
+                            <div style="width:20px; height:20px; background:#00ffff; border-radius:50%; box-shadow:0 0 10px #00ffff;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:4rem; padding:2rem; background:rgba(212, 255, 0, 0.05); border:1px solid rgba(212, 255, 0, 0.1); border-radius:16px;">
+                    <h4 style="font-size:0.7rem; color:var(--noir-accent); margin-bottom:1rem; letter-spacing:2px;">NEURAL_FEEDBACK</h4>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.8rem; opacity:0.6;">TACTICAL_SFX_RESPONSE</span>
+                        <div style="width:40px; height:20px; background:var(--noir-accent); border-radius:20px; position:relative; cursor:pointer;">
+                            <div style="width:16px; height:16px; background:black; border-radius:50%; position:absolute; top:2px; right:2px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GLOBALS
+        let PROTOCOLS = {}; 
+        let currentProtocolId = localStorage.getItem('selectedProtocol') || 'hypertrophy';
+        const API_BASE = (window.location.origin === 'null' || window.location.protocol === 'file:') ? 'http://localhost:3000' : '';
+
+        console.log(`[GENESIS_SYSTEM]: Initializing with API_BASE: ${API_BASE || 'ROOT'}`);
+
+        // INITIALIZATION
+        window.onload = async () => {
+            console.log(`[GENESIS_SYSTEM]: Attempting Tactical Link to ${API_BASE || 'LOCAL_HOST'}...`);
+            
+            // Robust Click Binding
+            document.querySelector('.header-user').addEventListener('click', openCustomizer);
+            
+            // System Ping
+            try {
+                const ping = await fetch(`${API_BASE}/ping`);
+                const pong = await ping.text();
+                console.log(`[GENESIS_SYSTEM]: Core Link: ${pong === 'PONG' ? 'STABLE' : 'UNSTABLE'}`);
+            } catch(e) { console.error("[GENESIS_SYSTEM]: LINK_FAILURE. Server may be offline.", e); }
+
+            initializeSystem();
+            
+            const savedTheme = localStorage.getItem('appTheme') || 'neon';
+            setTheme(savedTheme);
+
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) * 100;
+                const y = (e.clientY / window.innerHeight) * 100;
+                document.body.style.setProperty('--mouse-x', `${x}%`);
+                document.body.style.setProperty('--mouse-y', `${y}%`);
+            });
+        };
+
+        async function initializeSystem() {
+            await loadUserProfile();
+            await loadDailyStats();
+            await loadDynamicProtocols();
+            await loadExercises();
+            setupArnoldAI();
+            await loadTrendData();
+        }
+
+        // VIEW NAVIGATION
+        function switchView(viewId) {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === viewId);
+            });
+            document.querySelectorAll('.dashboard-view').forEach(view => {
+                view.classList.toggle('active', view.id === 'view-' + viewId);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // DATA FETCHING
+        async function loadUserProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("[GENESIS_SYNC]: Profile Data Received:", data);
+                    
+                    const name = (data.first_name || data.name || 'RECRUIT').toUpperCase();
+                    document.getElementById('userNameHeader').innerText = name;
+                    
+                    // Update Avatar
+                    if (data.avatar) {
+                        document.querySelector('.user-avatar-mini').style.backgroundImage = `url('${data.avatar}')`;
+                        document.getElementById('selected-avatar-url').value = data.avatar;
+                    }
+
+                    // Update Customizer Fields
+                    document.getElementById('cust-name').value = name;
+                    document.getElementById('cust-email').value = data.email || '';
+                    document.getElementById('cust-height').value = data.height || '';
+                    document.getElementById('cust-weight').value = data.current_weight || '';
+                    document.getElementById('cust-goal').value = data.fitness_goal || 'BUILD_MUSCLE';
+                    
+                    // Update HUD
+                    document.getElementById('hud-level').innerText = data.level || 1;
+                    const xp = data.xp || 0;
+                    const currentLevelXp = xp % 1000;
+                    document.getElementById('hud-xp-text').innerText = `${currentLevelXp} / 1000`;
+                    document.getElementById('hud-xp-fill').style.width = `${(currentLevelXp / 1000) * 100}%`;
+                    
+                    const ranks = ["RECRUIT", "SOLDIER", "COMMANDER", "ELITE", "GENESIS"];
+                    const rankIdx = Math.min(Math.floor((data.level || 1) / 5), ranks.length - 1);
+                    document.getElementById('hud-rank').innerText = ranks[rankIdx];
+                    document.getElementById('commander-rank').innerText = `Welcome back, ${ranks[rankIdx]}`;
+                } else {
+                    console.error("[GENESIS_SYNC]: Profile Fetch Failed:", response.status);
+                }
+            } catch (err) { console.error("Profile load failed", err); }
+        }
+
+        function selectAvatar(url) {
+            document.querySelectorAll('.avatar-option').forEach(opt => {
+                opt.style.borderColor = opt.style.backgroundImage.includes(url) ? 'var(--noir-accent)' : 'transparent';
+            });
+            document.getElementById('selected-avatar-url').value = url;
+        }
+
+        async function savePersonalization() {
+            const token = localStorage.getItem('token');
+            const data = {
+                name: document.getElementById('cust-name').value,
+                height: document.getElementById('cust-height').value,
+                currentWeight: document.getElementById('cust-weight').value,
+                targetWeight: document.getElementById('cust-weight').value, 
+                fitnessGoal: document.getElementById('cust-goal').value,
+                avatar_url: document.getElementById('selected-avatar-url').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/user/profile`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    alert("PERSONALIZATION_COMMITTED");
+                    loadUserProfile();
+                    closeCustomizer();
+                }
+            } catch (err) { console.error("Personalization failed", err); }
+        }
+
+        let ALL_EXERCISES = [];
+        async function loadExercises() {
+            const token = localStorage.getItem('token');
+            const container = document.getElementById('armory-container');
+            try {
+                const res = await fetch(`${API_BASE}/api/exercises`, { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                if (res.ok) {
+                    ALL_EXERCISES = await res.json();
+                    renderArmory(ALL_EXERCISES);
+                }
+            } catch (err) { console.error("Armory load failed", err); }
+        }
+
+        function renderArmory(exercises) {
+            const container = document.getElementById('armory-container');
+            if (!container) return;
+            
+            if (exercises.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:5rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--noir-accent); opacity:0.3; margin-bottom:1rem;"></i>
+                    <h3 style="opacity:0.5;">NO_MATCHING_DATA_IN_ARMORY</h3>
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            exercises.forEach(ex => {
+                const card = document.createElement('div');
+                card.className = 'exercise-card';
+                card.onclick = () => showExerciseDetail(ex);
+                
+                // Difficulty Logic for dots
+                const diffMap = { 'Elite': 5, 'Extreme': 5, 'Severe': 4, 'Heavy': 4, 'High': 5, 'Medium': 3, 'Easy': 1, 'Endurance': 3, 'Bodyweight': 2, 'Stable': 2, 'Smooth': 1, 'Technical': 1, 'Recovery': 1, 'Fluid': 1 };
+                const dots = diffMap[ex.difficulty] || 3;
+                let dotsHtml = '';
+                for(let i=1; i<=5; i++) {
+                    dotsHtml += `<div class="difficulty-dot ${i <= dots ? 'active' : ''}"></div>`;
+                }
+
+                const diffColor = ex.difficulty === 'High' ? '#ff4444' : (ex.difficulty === 'Medium' ? '#ffaa00' : '#00ffaa');
+
+                card.innerHTML = `
+                    <div class="exercise-card-img" style="background-image:url('${ex.img}')"></div>
+                    <div class="exercise-card-overlay"></div>
+                    <div class="exercise-card-content">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:auto;">
+                            <div class="exercise-card-meta">${ex.muscle.toUpperCase()} | ${ex.equipment.toUpperCase()}</div>
+                            <div style="background:${diffColor}22; border:1px solid ${diffColor}; color:${diffColor}; font-size:0.55rem; font-weight:950; padding:2px 10px; border-radius:4px; letter-spacing:1.5px;">${ex.difficulty.toUpperCase()}</div>
+                        </div>
+                        <h2 class="exercise-card-title">${ex.name.toUpperCase()}</h2>
+                        <p class="exercise-card-desc">${ex.detail}</p>
+                        <div class="exercise-card-footer">
+                            <div class="difficulty-indicator">
+                                ${dotsHtml}
+                            </div>
+                            <div style="font-size:0.8rem; font-weight:950; color:var(--noir-accent); letter-spacing:1px;">+${ex.xp} XP</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterByMuscle(muscle) {
+            const btns = document.querySelectorAll('#armory-muscle-filters .filter-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (muscle === 'ALL') {
+                renderArmory(ALL_EXERCISES);
+            } else {
+                const filtered = ALL_EXERCISES.filter(ex => ex.muscle.toLowerCase() === muscle.toLowerCase());
+                renderArmory(filtered);
+            }
+        }
+
+        function searchArmory() {
+            const query = document.getElementById('armory-search-input').value.toLowerCase();
+            const filtered = ALL_EXERCISES.filter(ex => 
+                ex.name.toLowerCase().includes(query) || 
+                ex.muscle.toLowerCase().includes(query) || 
+                ex.detail.toLowerCase().includes(query)
+            );
+            renderArmory(filtered);
+        }
+
+        async function loadDailyStats() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const nutritionRes = await fetch(`${API_BASE}/api/nutrition/stats`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (nutritionRes.ok) {
+                    const nData = await nutritionRes.json();
+                    const calEl = document.getElementById('stat-calories');
+                    if (calEl) calEl.innerHTML = `${nData.todayCalories || 0} <span>kcal</span>`;
+                }
+
+                const statsRes = await fetch(`${API_BASE}/api/stats`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (statsRes.ok) {
+                    const sData = await statsRes.json();
+                    const actEl = document.getElementById('stat-active');
+                    if (actEl) actEl.innerHTML = `${sData.todayCaloriesBurned || 0} <span>kcal</span>`;
+                }
+                
+                // LOAD RECENT ACTIVITY FOR FEED
+                const activityRes = await fetch(`${API_BASE}/api/workouts`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (activityRes.ok) {
+                    const activities = await activityRes.json();
+                    const feed = document.getElementById('activity-feed');
+                    if (feed) {
+                        feed.innerHTML = activities.slice(0, 5).map(act => `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:0.6rem 0.8rem; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; flex-direction:column;">
+                                    <span style="font-size:0.65rem; font-weight:900; color:white;">${act.exercise_name.toUpperCase()}</span>
+                                    <span style="font-size:0.5rem; opacity:0.5; font-weight:800;">${new Date(act.workout_date).toLocaleTimeString()}</span>
+                                </div>
+                                <span style="font-size:0.6rem; font-weight:950; color:var(--noir-accent);">+${act.calories_burned} KCAL</span>
+                            </div>
+                        `).join('');
+                        if (activities.length === 0) feed.innerHTML = `<div style="font-size:0.7rem; opacity:0.3; text-align:center; padding:1rem;">NO_RECENT_COMM_TRAFFIC</div>`;
+                    }
+                }
+            } catch (err) { console.error("Stats load failed", err); }
+        }
+
+        async function loadDynamicProtocols() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/api/ai/protocols`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    PROTOCOLS = await res.json();
+                    applyProtocol(currentProtocolId);
+                }
+            } catch (err) { console.error("Protocol sync failed", err); }
+        }
+
+        async function loadTrendData() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/api/stats/trends`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    renderTrends(data);
+                }
+            } catch (err) { console.error("Trend sync failed", err); }
+        }
+
+        function renderTrends(data) {
+            const bars = document.querySelectorAll('.trend-bar');
+            bars.forEach(bar => {
+                bar.style.height = '10%';
+                bar.classList.remove('active');
+            });
+            
+            data.forEach((day, i) => {
+                const barIndex = bars.length - 1 - (data.length - 1 - i);
+                if (bars[barIndex]) {
+                    const height = Math.min((day.calories / 1000) * 100, 100); 
+                    bars[barIndex].style.height = `${Math.max(height, 15)}%`;
+                    bars[barIndex].classList.add('active');
+                }
+            });
+        }
+
+        function applyProtocol(id) {
+            const proto = PROTOCOLS[id] || PROTOCOLS.hypertrophy;
+            if (!proto) return;
+            currentProtocolId = id;
+            localStorage.setItem('selectedProtocol', id);
+
+            const titleEl = document.getElementById('hero-title');
+            const protoDisplay = document.getElementById('hero-protocol-display');
+            const detailEl = document.getElementById('hero-detail');
+            const bgEl = document.getElementById('hero-bg');
+            
+            if (titleEl) titleEl.innerHTML = proto.title;
+            if (protoDisplay) protoDisplay.innerText = id.toUpperCase();
+            if (detailEl) detailEl.innerText = proto.detail;
+            if (bgEl) {
+                bgEl.style.backgroundImage = `url('${proto.img}')`; 
+                bgEl.style.backgroundPosition = proto.bgPos || 'center';
+            }
+            closeProtocolModal();
+        }
+
+        function openProtocolModal() {
+            const grid = document.getElementById('protocolSelectionGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            Object.entries(PROTOCOLS).forEach(([id, proto]) => {
+                const card = document.createElement('div');
+                card.onclick = () => applyProtocol(id);
+                card.style.cssText = "position:relative; background:#000; border-radius:12px; height:220px; overflow:hidden; cursor:pointer; border:1px solid rgba(255,255,255,0.05); transition:0.3s;";
+                card.innerHTML = `
+                    <div style="position:absolute; inset:0; background:url('${proto.img}') center/cover; opacity:0.3;"></div>
+                    <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index:1;"></div>
+                    <div style="position:relative; z-index:2; padding:2rem; height:100%; display:flex; flex-direction:column; justify-content:flex-end;">
+                        <h4 style="font-size:1.4rem; font-weight:900; color:white; margin-bottom:0.5rem;">${proto.title.replace('<br>', ' ')}</h4>
+                        <p style="font-size:0.75rem; color:rgba(255,255,255,0.5); font-weight:700;">${proto.detail}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('protocolModal').style.display = 'flex';
+        }
+
+        function closeProtocolModal() {
+            document.getElementById('protocolModal').style.display = 'none';
+        }
+
+        function startWorkout() {
+            const proto = PROTOCOLS[currentProtocolId];
+            if (!proto) return;
+            const logTitle = document.getElementById('log-protocol-title');
+            if (logTitle) logTitle.innerText = proto.title.replace('<br>', ' ');
+            document.getElementById('sessionLoggerModal').style.display = 'flex';
+        }
+
+        function startWorkoutWith(name) {
+            const logTitle = document.getElementById('log-protocol-title');
+            if (logTitle) logTitle.innerText = name.toUpperCase();
+            currentProtocolId = name.toLowerCase().replace(' ', '_');
+            document.getElementById('sessionLoggerModal').style.display = 'flex';
+        }
+
+        function closeSessionLog() {
+            document.getElementById('sessionLoggerModal').style.display = 'none';
+        }
+
+        async function submitSessionLog() {
+            const mins = parseInt(document.getElementById('log-duration').value);
+            if (!mins || mins <= 0) return;
+
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    await fetch(`${API_BASE}/api/workouts`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({
+                            exerciseName: currentProtocolId.toUpperCase(),
+                            duration: mins,
+                            calories: mins * 8
+                        })
+                    });
+                    closeSessionLog();
+                    await loadUserProfile(); // Update XP
+                    await loadDailyStats();
+                    await loadTrendData();
+                } catch (e) { console.error("Sync error", e); }
+            }
+        }
+
+        function setupArnoldAI() {
+            const arnoldContainer = document.getElementById('view-arnold');
+            if (!arnoldContainer) return;
+            arnoldContainer.innerHTML = `
+                <div class="hero-text" style="margin-bottom:3rem;">
+                    <h1 style="font-size: 3.5rem; line-height: 1; font-weight: 950; text-transform: uppercase; letter-spacing: -2px;">ARNOLD<br><span style="color:var(--noir-accent);">AI_COACH</span></h1>
+                    <p style="color:var(--noir-text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 4px; font-weight: 900; margin-top: 1rem;">TACTICAL TRAINING ENFORCER V5.2</p>
+                </div>
+                <div class="trend-container" style="height:600px; display:flex; flex-direction:column; padding:0; overflow:hidden; border:1px solid var(--noir-border); backdrop-filter:var(--noir-glass); background:var(--noir-card); border-radius:24px; position:relative;">
+                    <div id="arnold-chat" style="flex:1; padding:2rem; overflow-y:auto; display:flex; flex-direction:column; gap:1.5rem; scroll-behavior: smooth;">
+                        <div class="ai-msg" style="align-self:flex-start; background:rgba(212, 255, 0, 0.05); padding:1.2rem 1.8rem; border-radius:20px 20px 20px 0; border-left:4px solid var(--noir-accent); max-width:85%; font-size:0.95rem; font-weight:600; line-height:1.7; position:relative;">
+                            <div style="position:absolute; bottom:-25px; left:0; font-size:0.6rem; color:var(--noir-accent); font-weight:900; letter-spacing:1px;">ARNOLD_v5.2</div>
+                            [GENESIS_PROTOCOL_ONLINE]: Status: Tactical. Bio-metrics monitoring active. I am ARNOLD. How can I optimize your combat-ready parameters today?
+                        </div>
+                    </div>
+                    <div id="ai-typing" style="display:none; padding:1rem 2rem; font-size:0.7rem; color:var(--noir-accent); font-weight:950; letter-spacing:2px; animation: pulse 1.5s infinite;">ARNOLD_THINKING...</div>
+                    <div style="padding:1.5rem; background:rgba(0,0,0,0.4); border-top:1px solid var(--noir-border); display:flex; gap:1rem; align-items:center;">
+                        <div style="width:40px; height:40px; background:var(--noir-accent); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-brain" style="color:black; font-size:1.2rem;"></i>
+                        </div>
+                        <input type="text" id="ai-input" placeholder="INITIATE TACTICAL QUERY..." style="flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); color:white; padding:1.2rem; border-radius:12px; font-weight:700; letter-spacing:1px; font-family:inherit; outline:none;">
+                        <button onclick="sendAiMessage()" class="btn-neon" style="width:100px; border-radius:12px; font-size:0.7rem;">SEND</button>
+                    </div>
+                </div>
+            `;
+
+            const aiInput = document.getElementById('ai-input');
+            if (aiInput) {
+                aiInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendAiMessage();
+                });
+            }
+        }
+
+        async function sendAiMessage() {
+            const input = document.getElementById('ai-input');
+            const chat = document.getElementById('arnold-chat');
+            const typing = document.getElementById('ai-typing');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            // User Message
+            chat.innerHTML += `<div style="align-self:flex-end; background:rgba(255,255,255,0.08); padding:1.2rem 1.8rem; border-radius:20px 20px 0 20px; max-width:85%; font-size:0.95rem; font-weight:600; color:white; border:1px solid rgba(255,255,255,0.05); position:relative;">
+                <div style="position:absolute; bottom:-25px; right:0; font-size:0.6rem; color:rgba(255,255,255,0.3); font-weight:900; letter-spacing:1px;">YOU</div>
+                ${msg}
+            </div>`;
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+
+            // Arnold Thinking
+            if (typing) typing.style.display = 'block';
+
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/api/ai/coach`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ message: msg })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (typing) typing.style.display = 'none';
+                    
+                    // Typing Simulation
+                    const aiMsgId = 'ai-msg-' + Date.now();
+                    chat.innerHTML += `<div id="${aiMsgId}" class="ai-msg" style="align-self:flex-start; background:rgba(212, 255, 0, 0.05); padding:1.2rem 1.8rem; border-radius:20px 20px 20px 0; border-left:4px solid var(--noir-accent); max-width:85%; font-size:0.95rem; font-weight:600; line-height:1.7; position:relative;">
+                        <div style="position:absolute; bottom:-25px; left:0; font-size:0.6rem; color:var(--noir-accent); font-weight:900; letter-spacing:1px;">ARNOLD_v5.2</div>
+                        <span class="typing-text"></span>
+                    </div>`;
+                    
+                    const textSpan = document.getElementById(aiMsgId).querySelector('.typing-text');
+                    let i = 0;
+                    const responseText = data.response;
+                    
+                    function typeWriter() {
+                        if (i < responseText.length) {
+                            textSpan.innerHTML += responseText.charAt(i);
+                            i++;
+                            chat.scrollTop = chat.scrollHeight;
+                            setTimeout(typeWriter, 20);
+                        }
+                    }
+                    typeWriter();
+                }
+            } catch (err) { 
+                if (typing) typing.style.display = 'none';
+                console.error("AI comms failed", err); 
+            }
+        }
+
+        function openCustomizer() {
+            document.getElementById('customizerModal').style.display = 'flex';
+        }
+
+        function closeCustomizer() {
+            document.getElementById('customizerModal').style.display = 'none';
+        }
+
+        function openMealLog() {
+            document.getElementById('mealLoggerModal').style.display = 'flex';
+        }
+
+        function closeMealLog() {
+            document.getElementById('mealLoggerModal').style.display = 'none';
+        }
+
+        let currentInspectedExercise = null;
+
+        function showExerciseDetail(ex) {
+            currentInspectedExercise = ex;
+            document.getElementById('ex-detail-img').style.backgroundImage = `url('${ex.img}')`;
+            document.getElementById('ex-detail-name').innerText = ex.name.toUpperCase();
+            document.getElementById('ex-detail-muscle').innerText = `${ex.muscle} | ${ex.equipment}`;
+            document.getElementById('ex-detail-desc').innerText = ex.detail;
+            document.getElementById('ex-detail-xp').innerText = `+${ex.xp} XP`;
+            document.getElementById('ex-detail-type').innerText = ex.type;
+
+            // Steps
+            const stepsList = document.getElementById('ex-detail-steps');
+            stepsList.innerHTML = '';
+            if (ex.steps && ex.steps.length > 0) {
+                ex.steps.forEach((step, idx) => {
+                    stepsList.innerHTML += `
+                        <li style="display:flex; gap:1rem; align-items:flex-start;">
+                            <span style="color:var(--noir-accent); font-weight:900; font-size:0.7rem;">0${idx+1}</span>
+                            <span style="font-size:0.85rem; color:rgba(255,255,255,0.8); line-height:1.4;">${step}</span>
+                        </li>
+                    `;
+                });
+            } else {
+                stepsList.innerHTML = '<li style="color:var(--noir-text-dim); font-style:italic;">No steps provided for this protocol.</li>';
+            }
+
+            const diffMap = { 'Elite': 5, 'Extreme': 5, 'Severe': 4, 'Heavy': 4, 'High': 5, 'Medium': 3, 'Easy': 1, 'Endurance': 3, 'Bodyweight': 2, 'Stable': 2, 'Smooth': 1, 'Technical': 1, 'Recovery': 1, 'Fluid': 1 };
+            const dots = diffMap[ex.difficulty] || 3;
+            const container = document.getElementById('ex-detail-diff');
+            container.innerHTML = '';
+            for(let i=1; i<=5; i++) {
+                container.innerHTML += `<div class="difficulty-dot ${i <= dots ? 'active' : ''}" style="width:12px; height:12px;"></div>`;
+            }
+
+            document.getElementById('exerciseDetailModal').style.display = 'flex';
+        }
+
+        function filterByMuscle(muscle) {
+            const btns = document.querySelectorAll('#armory-muscle-filters .filter-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
+
+            if (muscle === 'ALL') {
+                renderArmory(ALL_EXERCISES);
+            } else {
+                const filtered = ALL_EXERCISES.filter(ex => ex.muscle.toLowerCase() === muscle.toLowerCase());
+                renderArmory(filtered);
+            }
+        }
+
+        function closeExerciseDetail() {
+            document.getElementById('exerciseDetailModal').style.display = 'none';
+        }
+
+        function startWorkoutFromDetail() {
+            if (!currentInspectedExercise) return;
+            closeExerciseDetail();
+            startWorkoutWith(currentInspectedExercise.name);
+        }
+
+        async function submitMealLog() {
+            const name = document.getElementById('meal-name').value || 'UNNAMED_MEAL';
+            const kcal = parseInt(document.getElementById('meal-kcal').value);
+            const protein = parseInt(document.getElementById('meal-protein').value);
+            const carbs = parseInt(document.getElementById('meal-carbs').value);
+            const fats = parseInt(document.getElementById('meal-fats').value);
+
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${API_BASE}/api/nutrition`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        mealType: name,
+                        foodItems: [name],
+                        totalCalories: kcal,
+                        totalProtein: protein,
+                        totalCarbs: carbs,
+                        totalFats: fats
+                    })
+                });
+                closeMealLog();
+                const frame = document.getElementById('fuel-frame');
+                if (frame) frame.contentWindow.location.reload();
+                await loadDailyStats();
+            } catch (e) { console.error("Fuel log error", e); }
+        }
+
+        function setTheme(theme) {
+            const root = document.documentElement;
+            localStorage.setItem('appTheme', theme);
+            
+            document.querySelectorAll('[id^="theme-"]').forEach(el => el.style.borderColor = 'transparent');
+            const activeThemeEl = document.getElementById('theme-' + theme);
+            if (activeThemeEl) activeThemeEl.style.borderColor = 'var(--noir-accent)';
+
+            switch(theme) {
+                case 'neon':
+                    root.style.setProperty('--noir-accent', '#d4ff00');
+                    root.style.setProperty('--noir-bg', '#050507');
+                    break;
+                case 'midnight':
+                    root.style.setProperty('--noir-accent', '#ff2d55');
+                    root.style.setProperty('--noir-bg', '#000000');
+                    break;
+                case 'arctic':
+                    root.style.setProperty('--noir-accent', '#00fbff');
+                    root.style.setProperty('--noir-bg', '#050a0f');
+                    break;
+            }
+            closeCustomizer();
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

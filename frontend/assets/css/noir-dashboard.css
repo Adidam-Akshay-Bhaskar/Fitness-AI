@@ -1,0 +1,441 @@
+/* 
+   NOIR FIT - DASHBOARD STYLES
+   Aesthetic: Ultra-dark, High-end 2D Animation style, Tactical Yellow accents
+*/
+
+:root {
+    --noir-bg: #050507;
+    --noir-card: rgba(13, 13, 15, 0.6);
+    --noir-input: rgba(25, 25, 27, 0.7);
+    --noir-accent: #d4ff00;
+    --noir-text: #ffffff;
+    --noir-text-dim: rgba(255, 255, 255, 0.4);
+    --noir-border: rgba(255, 255, 255, 0.08);
+    --noir-glass: blur(30px);
+}
+
+body.noir-dashboard {
+    background-color: var(--noir-bg);
+    color: var(--noir-text);
+    overflow-x: hidden;
+    padding-bottom: 80px; 
+    transition: background 1s ease;
+}
+
+body.noir-dashboard::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212, 255, 0, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.dashboard-view {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.dashboard-view.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ─── HEADER ─── */
+.noir-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--noir-border);
+    position: sticky;
+    top: 0;
+    background: rgba(5, 5, 5, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar-mini {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: url('../images/dash-avatar-hq.png') center/cover;
+    border: 1px solid var(--noir-accent);
+}
+
+.user-welcome span {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--noir-text-dim);
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+.user-welcome h4 {
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.noir-brand {
+    font-size: 1.2rem;
+    font-weight: 900;
+    font-style: italic;
+    color: var(--noir-accent);
+    letter-spacing: 1px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.header-actions i {
+    color: var(--noir-text-dim);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.header-actions i:hover {
+    color: var(--noir-accent);
+}
+
+/* ─── DASHBOARD CONTENT ─── */
+.noir-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.hero-text {
+    margin-bottom: 3rem;
+}
+
+.hero-text h1 {
+    font-size: clamp(3rem, 6vw, 5rem);
+    line-height: 0.85;
+    margin-bottom: 1rem;
+}
+
+.hero-badges {
+    display: flex;
+    gap: 1rem;
+}
+
+.badge-tactical {
+    background: var(--noir-input);
+    border: 1px solid var(--noir-border);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge-tactical i {
+    color: var(--noir-accent);
+}
+
+/* ─── MAIN GRID ─── */
+.noir-main-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.hero-card {
+    position: relative;
+    background: #000;
+    border-radius: 12px;
+    height: 480px; /* Made slightly taller */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center-ish content */
+    padding: 4rem;
+    border: 1px solid var(--noir-border);
+}
+
+.hero-card-bg {
+    position: absolute;
+    inset: 0;
+    background: url('../images/simple_athlete.png') right top/cover; /* Simple clean cartoon athlete */
+    opacity: 0.9; 
+    z-index: 1;
+}
+
+
+
+.hero-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%);
+    z-index: 2;
+}
+
+.hero-card-content {
+    position: relative;
+    z-index: 10;
+    max-width: 500px;
+}
+
+.hero-card-content span {
+    color: var(--noir-accent);
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 2.5px;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.hero-card h2 {
+    font-size: 4rem; /* Much bigger like screenshot */
+    line-height: 0.9;
+    margin: 0 0 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+
+.stats-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.stats-card {
+    background: var(--noir-card);
+    backdrop-filter: var(--noir-glass);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--noir-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+.stats-info h5 {
+    color: var(--noir-text-dim);
+    font-size: 0.7rem;
+    margin-bottom: 0.3rem;
+}
+
+.stats-value {
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.stats-value span {
+    font-size: 0.7rem;
+    color: var(--noir-text-dim);
+    margin-left: 0.3rem;
+}
+
+/* ─── UTILITY GRID ─── */
+.utility-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.util-card {
+    background: var(--noir-card);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--noir-border);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.util-card:hover {
+    border-color: var(--noir-accent);
+    transform: translateY(-5px);
+}
+
+.util-card i {
+    font-size: 1.5rem;
+    color: var(--noir-accent);
+    margin-bottom: 1rem;
+}
+
+.util-card h4 {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.util-card p {
+    font-size: 0.65rem;
+    color: var(--noir-text-dim);
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+/* ─── TREND SECTION ─── */
+.trend-card {
+    background: var(--noir-card);
+    border-radius: 12px;
+    padding: 2.5rem;
+    border: 1px solid var(--noir-border);
+    min-height: 300px;
+}
+
+.trend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+/* ─── BOTTOM NAV ─── */
+.noir-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(8, 8, 8, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--noir-border);
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem 0;
+    z-index: 1000;
+}
+
+.nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--noir-text-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.nav-tab.active {
+    color: var(--noir-accent);
+}
+
+.nav-tab i {
+    font-size: 1.2rem;
+}
+
+.nav-tab span {
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* ─── ANIMATIONS & POLISH ─── */
+.badge-tactical i {
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { opacity: 0.5; filter: drop-shadow(0 0 0px var(--noir-accent)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 5px var(--noir-accent)); }
+    100% { opacity: 0.5; filter: drop-shadow(0 0 0px var(--noir-accent)); }
+}
+
+.util-card i {
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.util-card:hover i {
+    transform: scale(1.2) translateY(-5px);
+}
+
+.btn-neon {
+    transition: all 0.3s;
+    overflow: hidden;
+    position: relative;
+}
+
+.btn-neon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.btn-neon:hover::after {
+    left: 100%;
+    top: 100%;
+}
+
+.nav-tab i {
+    transition: transform 0.3s;
+}
+
+.nav-tab:hover i {
+    transform: translateY(-3px);
+}
+
+/* Glassmorphism subtle overlay */
+body.noir-dashboard::before {
+    content: '';
+    position: fixed;
+    top: 10%;
+    left: 10%;
+    width: 30vw;
+    height: 30vw;
+    background: radial-gradient(circle, rgba(212, 255, 0, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+@media (max-width: 900px) {
+    .noir-main-grid { grid-template-columns: 1fr; }
+    .utility-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ─── TACTICAL NOTIFICATIONS & FORMS ─── */
+@keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.tactical-input-group input:focus, 
+.tactical-input-group select:focus {
+    outline: none;
+    border-color: var(--noir-accent) !important;
+    background: rgba(205,255,0,0.05) !important;
+    box-shadow: 0 0 15px rgba(205,255,0,0.1);
+}
+
+.tactical-input-group input, 
+.tactical-input-group select {
+    transition: all 0.3s;
+}
+

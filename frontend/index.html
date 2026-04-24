@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITFUTURE - Kinetic Noir</title>
+    <link rel="stylesheet" href="assets/css/kinetic-noir.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/assets/css/all.min.css">
+</head>
+<body>
+    <nav class="kinetic-nav" id="mainNav">
+        <a href="/" class="nav-brand">⚡ FITFUTURE</a>
+        <div class="nav-links">
+            <a href="#programs">Programs</a>
+            <a href="javascript:void(0)" onclick="openAuthDrawer('login')">Sign In</a>
+        </div>
+    </nav>
+
+    <!-- SIDE DRAWER FOR AUTH (LOGIN/SIGNUP) -->
+    <div id="authOverlay" class="auth-overlay" onclick="closeAuthDrawer()"></div>
+    <div id="authDrawer" class="auth-drawer">
+        <button class="drawer-close" onclick="closeAuthDrawer()">&times;</button>
+        <div class="drawer-content">
+            <iframe id="authFrame" src="" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    <section class="video-section">
+        <!-- Autoplaying video, smooth and seamless without scrubbing pauses -->
+        <video class="video-element" autoplay muted loop playsinline>
+            <source src="assets/videos/fitai.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+        
+        <div class="video-content fade-in-scroll">
+            <h1 class="title-giant">UNLEASH YOUR<br><span class="text-neon">POTENTIAL.</span></h1>
+            <p class="subtitle">Professional training, extreme conditions. Experience the raw power of FitFuture.</p>
+            <a href="javascript:void(0)" onclick="openAuthDrawer('register')" class="btn-neon">START FREE TRIAL</a>
+            
+            <div class="stats-row">
+                <div class="stat-box">
+                    <span class="number">500+</span>
+                    <span class="label">Workouts</span>
+                </div>
+                <div class="stat-box">
+                    <span class="number">12K</span>
+                    <span class="label">Athletes</span>
+                </div>
+                <div class="stat-box">
+                    <span class="number">24/7</span>
+                    <span class="label">Support</span>
+                </div>
+                <div class="stat-box">
+                    <span class="number">TOP 1%</span>
+                    <span class="label">Results</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="programs" class="features-grid">
+        <div class="section-label">THE ARSENAL</div>
+        <h2 class="title-giant" style="font-size: clamp(2rem, 5vw, 4rem);">OUR PROGRAMS</h2>
+        
+        <div class="grid-container">
+            <!-- Strength Card (Takes up 2/3 width or 1 grid col) -->
+            <div class="feature-card fade-in-scroll" style="--card-bg: url('../assets/images/strength.png');">
+                <div class="feature-card-content">
+                    <span class="feature-subtitle">MUSCLE FORGE</span>
+                    <h3>STRENGTH</h3>
+                    <p>Forge raw muscle. Unrelenting hypertrophy and conditioning protocols built for total dominance.</p>
+                </div>
+            </div>
+            
+            <!-- HIIT Card -->
+            <div class="feature-card fade-in-scroll" style="transition-delay: 0.1s; --card-bg: url('../assets/images/hiit.png');">
+                <div class="feature-card-content">
+                    <span class="feature-subtitle">CARDIO CORE</span>
+                    <h3>HIIT</h3>
+                    <p>High-Intensity Interval Training. Push your cardiovascular limits. Maximum burn, minimum time.</p>
+                </div>
+            </div>
+            
+            <!-- Yoga Card -->
+            <div class="feature-card fade-in-scroll" style="transition-delay: 0.2s; --card-bg: url('../assets/images/yoga.png');">
+                <div class="feature-card-content">
+                    <span class="feature-subtitle">REACH BEYOND</span>
+                    <h3>YOGA & MOBILITY</h3>
+                    <p>Master your range of motion. Recovery is just as intense as the workout itself.</p>
+                </div>
+            </div>
+            
+            <!-- Nutrition Card -->
+            <div class="feature-card fade-in-scroll" style="transition-delay: 0.3s; --card-bg: url('../assets/images/nutrition.png');">
+                <div class="feature-card-content">
+                    <span class="feature-subtitle">FUEL THE FIRE</span>
+                    <h3>NUTRITION</h3>
+                    <p>Optimize your intake. Precision macros and advanced meal protocols designed to accelerate your exact goals.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section" style="position: relative; padding: 10rem 2rem; overflow: hidden; background: #0a0a0a;">
+        <!-- Background with cartoon illustration -->
+        <div style="position: absolute; inset: 0; background: url('assets/images/footer-bg.png') center/cover no-repeat; opacity: 0.3; z-index: 0;"></div>
+        <div style="position: absolute; inset: 0; background: linear-gradient(to top, #0a0a0a 0%, transparent 50%, #0a0a0a 100%); z-index: 1;"></div>
+        
+        <div style="position: relative; z-index: 2; text-align:center;" class="fade-in-scroll">
+            <h2 class="title-giant" style="font-size: clamp(2.5rem, 6vw, 5rem); margin-bottom: 1.5rem;">READY TO <span class="text-neon">EVOLVE?</span></h2>
+            <p style="color:var(--text-secondary); margin-bottom: 3rem; font-size: 1.1rem; max-width: 600px; margin-left: auto; margin-right: auto; text-transform: uppercase; letter-spacing: 2px; font-weight: 500;">
+                Join the global elite. Train with no limits.<br>Your legacy starts here.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+                <a href="javascript:void(0)" onclick="openAuthDrawer('register')" class="btn-neon" style="padding: 1.2rem 3rem; font-size: 1rem;">JOIN THE MOVEMENT</a>
+                <a href="javascript:void(0)" onclick="openAuthDrawer('login')" class="btn-neon" style="background: transparent; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 1.2rem 3rem; font-size: 1rem;">MEMBER LOGIN</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Professional Footer -->
+    <footer style="background: #050505; padding: 6rem 4rem 3rem; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4rem; max-width: 1400px; margin: 0 auto; margin-bottom: 4rem;">
+            <div>
+                <a href="/" class="nav-brand" style="font-size: 1.5rem; margin-bottom: 1.5rem; display: block;">⚡ FITFUTURE</a>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.8; margin-bottom: 2rem;">
+                    The ultimate data-driven fitness platform for the modern athlete. Precision training. Radical results.
+                </p>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="#" style="color: var(--text-primary); font-size: 1.2rem;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: var(--text-primary); font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="color: var(--text-primary); font-size: 1.2rem;"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--text-primary);">PLATFORM</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 0.8rem;"><a href="#programs" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Programs</a></li>
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Analytics</a></li>
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Nutrition</a></li>
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Leaderboard</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 style="font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--text-primary);">RESOURCES</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Help Center</a></li>
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Community</a></li>
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Privacy Policy</a></li>
+                    <li style="margin-bottom: 0.8rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="color: var(--text-secondary); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+                &copy; 2026 FITFUTURE. ALL RIGHTS RESERVED.
+            </p>
+            <p style="color: var(--text-secondary); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">
+                ENGINEERED FOR EXCELLENCE
+            </p>
+        </div>
+    </footer>
+
+    <script src="assets/js/kinetic.js"></script>
+</body>
+</html>

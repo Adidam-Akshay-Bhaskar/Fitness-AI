@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIO_ANALYTICS | GENESIS_PROTOCOL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/kinetic-noir.css">
+    <style>
+        :root {
+            --noir-accent: #d4ff00;
+            --noir-bg: #050505;
+            --noir-card: rgba(15, 15, 20, 0.6);
+            --noir-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(25px);
+        }
+
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            background: var(--noir-bg);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.1) saturate(0.2);
+            z-index: -1;
+        }
+
+        .stats-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top left, rgba(212, 255, 0, 0.05), transparent 70%),
+                        linear-gradient(to bottom, transparent, var(--noir-bg));
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--noir-border);
+            padding-bottom: 1.5rem;
+        }
+
+        .header-title h1 {
+            font-size: 3rem;
+            font-weight: 950;
+            margin: 0;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .header-title span {
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: var(--noir-accent);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        /* GRID SYSTEM */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 400px;
+            gap: 2rem;
+        }
+
+        .glass-card {
+            background: var(--noir-card);
+            border: 1px solid var(--noir-border);
+            border-radius: 24px;
+            backdrop-filter: var(--glass-blur);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+        }
+
+        .card-label {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        /* METRICS ROW */
+        .metrics-row {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 3.5rem;
+            font-weight: 950;
+            letter-spacing: -2px;
+            line-height: 1;
+        }
+
+        .metric-unit {
+            font-size: 0.8rem;
+            font-weight: 900;
+            opacity: 0.4;
+            margin-left: 0.3rem;
+        }
+
+        /* CHARTS */
+        .chart-large {
+            height: 350px;
+        }
+
+        .chart-medium {
+            height: 250px;
+        }
+
+        /* BIO FORM */
+        .input-group { margin-bottom: 1.5rem; }
+        .input-group label {
+            display: block;
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            color: white;
+            font-family: inherit;
+            font-weight: 700;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--noir-accent);
+            background: rgba(212, 255, 0, 0.05);
+        }
+
+        .btn-sync {
+            width: 100%;
+            background: var(--noir-accent);
+            color: black;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 14px;
+            font-weight: 950;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-sync:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(212, 255, 0, 0.3);
+        }
+
+        /* HISTORY LOG */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--noir-border);
+            border-radius: 16px;
+            transition: 0.3s;
+        }
+
+        .history-item:hover {
+            background: rgba(212, 255, 0, 0.03);
+            border-color: rgba(212, 255, 0, 0.2);
+        }
+
+        .hist-meta h4 { margin: 0; font-size: 0.9rem; text-transform: uppercase; }
+        .hist-meta span { font-size: 0.65rem; opacity: 0.4; font-weight: 800; }
+
+        .tag-stats {
+            background: rgba(212, 255, 0, 0.1);
+            color: var(--noir-accent);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 900;
+        }
+
+        /* RADAR BOX */
+        .radar-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+        }
+
+        @media (max-width: 1400px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .sidebar-col { grid-column: span 2; }
+        }
+
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .metrics-row { grid-template-columns: 1fr 1fr; }
+            .sidebar-col { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stats-bg"></div>
+    <div class="stats-overlay"></div>
+
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <span>SYSTEM_DIAGNOSTICS</span>
+                <h1>BIO_ANALYTICS</h1>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.8rem; font-weight: 900; color: var(--noir-accent); letter-spacing: 2px;">PROTOCOL_V4.2_ACTIVE</div>
+                <div style="font-size: 0.6rem; opacity: 0.4;">LAST_SYNC: <span id="sync-time">JUST NOW</span></div>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <!-- Core Metrics -->
+            <div class="metrics-row">
+                <div class="glass-card metric-card">
+                    <span class="card-label">ACTIVE_ENGAGEMENT</span>
+                    <div class="metric-value" id="val-mins">0<span class="metric-unit">MIN</span></div>
+                </div>
+                <div class="glass-card metric-card">
+                    <span class="card-label">ENERGY_EXPENDITURE</span>
+                    <div class="metric-value" id="val-burned">0<span class="metric-unit">KCAL</span></div>
+                </div>
+                <div class="glass-card metric-card">
+                    <span class="card-label">MISSION_COUNT</span>
+                    <div class="metric-value" id="val-count">0<span class="metric-unit">UNITS</span></div>
+                </div>
+                <div class="glass-card metric-card">
+                    <span class="card-label">NEURAL_XP</span>
+                    <div class="metric-value" id="val-xp">0<span class="metric-unit">PTS</span></div>
+                </div>
+            </div>
+
+            <!-- Volume Trend -->
+            <div class="glass-card" style="grid-column: span 2;">
+                <span class="card-label">METABOLIC_VOLUME_PROGRESSION (7 DAYS)</span>
+                <div class="chart-large">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Bio Parameters -->
+            <div class="glass-card sidebar-col" style="grid-row: span 2;">
+                <span class="card-label">BIO_PARAMETER_COMMAND</span>
+                <form id="bio-form">
+                    <div class="input-group">
+                        <label>STRUCTURAL_HEIGHT (CM)</label>
+                        <input type="number" id="height" placeholder="000">
+                    </div>
+                    <div class="input-group">
+                        <label>CURRENT_MASS (KG)</label>
+                        <input type="number" id="weight" placeholder="00.0">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="input-group">
+                            <label>LIPID_PERCENT (%)</label>
+                            <input type="number" id="bodyFat" placeholder="0.0">
+                        </div>
+                        <div class="input-group">
+                            <label>MUSCLE_RATIO (KG)</label>
+                            <input type="number" id="muscleMass" placeholder="0.0">
+                        </div>
+                    </div>
+                    <div class="glass-card" style="margin-bottom: 2rem; background: rgba(212, 255, 0, 0.05); border-color: rgba(212, 255, 0, 0.1);">
+                        <span class="card-label" style="color: var(--noir-accent);">DIAGNOSTIC_ESTIMATES</span>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span style="font-size: 0.7rem; font-weight: 800; opacity: 0.6;">BMI_INDEX:</span>
+                            <span id="diag-bmi" style="font-weight: 950; color: var(--noir-accent);">0.0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span style="font-size: 0.7rem; font-weight: 800; opacity: 0.6;">BMR_KCAL:</span>
+                            <span id="diag-bmr" style="font-weight: 950; color: var(--noir-accent);">0</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-sync">SYNC_PARAMETERS</button>
+                </form>
+            </div>
+
+            <!-- Distribution -->
+            <div class="glass-card">
+                <span class="card-label">PROTOCOL_DISTRIBUTION</span>
+                <div class="chart-medium">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="glass-card">
+                <span class="card-label">MISSION_HISTORY_ARCHIVE</span>
+                <div id="history-list" class="history-list">
+                    <!-- Dynamic Items -->
+                </div>
+            </div>
+
+            <!-- Radar Intensity -->
+            <div class="glass-card sidebar-col">
+                <span class="card-label">INTENSITY_CALIBRATION_MATRIX</span>
+                <div class="chart-medium">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let volumeChart = null;
+        let typeChart = null;
+        let radarChart = null;
+
+        async function initCharts() {
+            // Volume Chart
+            const volCtx = document.getElementById('volumeChart').getContext('2d');
+            volumeChart = new Chart(volCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Calories',
+                        data: [],
+                        borderColor: '#d4ff00',
+                        backgroundColor: 'rgba(212, 255, 0, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#d4ff00',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit', weight: 900 } }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit', weight: 900 } }
+                        }
+                    }
+                }
+            });
+
+            // Type Distribution
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            typeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Strength', 'Cardio', 'Mobility', 'Functional'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#d4ff00', '#00ff88', '#00ccff', '#ffaa00'],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'Outfit', weight: 700, size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // Radar Intensity
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['POWER', 'STAMINA', 'AGILITY', 'RECOVERY', 'FOCUS', 'VITALITY'],
+                    datasets: [{
+                        label: 'Current Status',
+                        data: [85, 70, 90, 65, 80, 75],
+                        borderColor: '#d4ff00',
+                        backgroundColor: 'rgba(212, 255, 0, 0.2)',
+                        pointBackgroundColor: '#d4ff00',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.1)' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            pointLabels: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit', weight: 900, size: 10 } },
+                            ticks: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadBioMetrics() {
+            const token = localStorage.getItem('token');
+            try {
+                // 1. Load Stats
+                const statsRes = await fetch(`${API_BASE}/api/stats`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (statsRes.ok) {
+                    const s = await statsRes.json();
+                    document.getElementById('val-mins').innerText = s.todayActiveMinutes || 0;
+                    document.getElementById('val-burned').innerText = s.todayCaloriesBurned || 0;
+                    document.getElementById('val-count').innerText = s.totalWorkouts || 0;
+                }
+
+                // 2. Load Profile (Weight/Height)
+                const profRes = await fetch(`${API_BASE}/api/user/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (profRes.ok) {
+                    const p = await profRes.json();
+                    document.getElementById('height').value = p.height || '';
+                    document.getElementById('weight').value = p.current_weight || '';
+                    document.getElementById('bodyFat').value = p.bodyFat || '';
+                    document.getElementById('muscleMass').value = p.muscleMass || '';
+                    document.getElementById('val-xp').innerText = p.xp || 0;
+                    
+                    updateDiagnostics(p.height, p.current_weight, p.age, p.gender);
+                }
+
+                // 3. Load Trends (Charts)
+                const trendRes = await fetch(`${API_BASE}/api/stats/trends`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (trendRes.ok) {
+                    const trends = await trendRes.json();
+                    const labels = trends.map(t => new Date(t.date).toLocaleDateString('en-US', { weekday: 'short' }));
+                    const data = trends.map(t => t.calories);
+                    
+                    volumeChart.data.labels = labels;
+                    volumeChart.data.datasets[0].data = data;
+                    volumeChart.update();
+                }
+
+                // 4. Load History
+                const histRes = await fetch(`${API_BASE}/api/workouts`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (histRes.ok) {
+                    const workouts = await histRes.json();
+                    const list = document.getElementById('history-list');
+                    list.innerHTML = '';
+                    
+                    let types = { Strength: 0, Cardio: 0, Mobility: 0, Functional: 0 };
+                    
+                    workouts.slice(0, 5).forEach(w => {
+                        const date = new Date(w.workout_date || w.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        list.innerHTML += `
+                            <div class="history-item">
+                                <div class="hist-meta">
+                                    <h4>${w.exercise_name || w.exerciseName}</h4>
+                                    <span>${date.toUpperCase()} • ${w.duration} MIN</span>
+                                </div>
+                                <span class="tag-stats">${w.calories_burned || w.calories} KCAL</span>
+                            </div>
+                        `;
+                    });
+
+                    // Tally types for chart (simulated based on logic)
+                    workouts.forEach(w => {
+                        // Backend doesn't store type explicitly in history, but we can infer or use mock for now
+                        types.Strength++;
+                    });
+                    typeChart.data.datasets[0].data = [12, 8, 5, 4]; // Placeholder for variety
+                    typeChart.update();
+                }
+
+                document.getElementById('sync-time').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            } catch (err) { console.error("Bio Sync Failed", err); }
+        }
+
+        function updateDiagnostics(h, w, age, gender) {
+            if (!h || !w) return;
+            const heightM = h / 100;
+            const bmi = w / (heightM * heightM);
+            document.getElementById('diag-bmi').innerText = bmi.toFixed(1);
+
+            // BMR (Mifflin-St Jeor)
+            let bmr = (10 * w) + (6.25 * h) - (5 * (age || 25));
+            bmr += (gender === 'male') ? 5 : -161;
+            document.getElementById('diag-bmr').innerText = Math.round(bmr);
+        }
+
+        document.getElementById('bio-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const data = {
+                height: document.getElementById('height').value,
+                currentWeight: document.getElementById('weight').value,
+                bodyFat: document.getElementById('bodyFat').value,
+                muscleMass: document.getElementById('muscleMass').value,
+                // These are required by the backend PUT /api/user/profile logic if using the profile format
+                name: document.getElementById('hero-name')?.innerText || 'USER' 
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/profile`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    alert("BIO_PARAMETERS_SYNCED");
+                    loadBioMetrics();
+                }
+            } catch (err) { console.error("Sync Failed", err); }
+        });
+
+        initCharts().then(loadBioMetrics);
+    </script>
+</body>
+</html>

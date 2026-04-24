@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITFUTURE - Join The Movement</title>
+    <link rel="stylesheet" href="assets/css/kinetic-noir.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/assets/css/all.min.css">
+</head>
+<body style="background-color:#111; overflow-y:auto;" class="auth-page">
+    <script>
+        if (window.self !== window.top) {
+            document.body.classList.add('in-drawer');
+        }
+    </script>
+    <div class="auth-layout" style="min-height: 100vh; padding: 2rem 1rem;">
+        
+        <!-- Header Branding (matching the screenshot layout) -->
+        <div style="position:absolute; top: 2rem; left: 2rem; right: 2rem; display:flex; justify-content:space-between; align-items:center;">
+             <a href="/" class="nav-brand" style="font-size: 1.2rem;">⚡ <span style="font-style:italic;">FITFUTURE</span></a>
+             <div style="color:var(--text-secondary); font-size: 0.75rem; font-weight:800; letter-spacing:2px;">
+                 ⚡ EST. 2026
+             </div>
+        </div>
+
+        <!-- Giant background text effect -->
+        <div style="position:fixed; top: 20%; left: 0; width: 100%; text-align:center; z-index:-1; pointer-events:none; opacity: 0.03;">
+            <h1 style="font-size: 30vw; line-height:0.8; color: var(--neon-green);">RAW.</h1>
+        </div>
+
+        <div class="auth-card fade-in-scroll is-visible">
+            <div class="auth-header" style="margin-bottom: 2rem;">
+                 <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; line-height:1.2;">CREATE ACCOUNT</h2>
+                 <p style="color:var(--text-secondary); font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Enter your metrics to begin the drill.</p>
+            </div>
+
+            <form id="registerForm" class="auth-form">
+                
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                    <label for="firstName">FULL NAME</label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="ELIAS DRAKE">
+                </div>
+
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                    <label for="email">EMAIL ADDRESS</label>
+                    <input type="email" id="email" name="email" required placeholder="ACTIVE@FITFUTURE.COM">
+                </div>
+
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                    <label for="password">PASSWORD</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+
+                <div class="form-group" style="margin-bottom:2rem;">
+                    <label for="confirmPassword">CONFIRM</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••">
+                </div>
+
+                <div style="display:flex; gap: 1rem; align-items:flex-start; margin-bottom: 2rem;">
+                    <input type="checkbox" id="terms" required style="width:16px; height:16px; margin-top:3px; accent-color:var(--neon-green);">
+                    <label for="terms" style="color:var(--text-secondary); font-size:0.8rem; line-height:1.5;">
+                        I agree to the <span style="color:var(--text-primary); font-weight:bold;">Terms & Conditions</span> and acknowledge the <span style="color:var(--text-primary); font-weight:bold;">Privacy Policy</span>.
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit" class="btn-neon" style="width:100%; border-radius:4px; padding:1.2rem;">JOIN THE MOVEMENT</button>
+                </div>
+
+            </form>
+
+            <div class="auth-switch" style="margin-top:2.5rem; text-align:center;">
+                <span style="font-size:0.8rem; font-weight:600; letter-spacing:1px; color:var(--text-secondary);">ALREADY HAVE AN ACCOUNT?</span> 
+                <a href="login.html" style="margin-left:0.5rem; font-size:0.9rem; border-bottom: 2px solid var(--neon-green); padding-bottom:2px;">LOG IN</a>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align:center; padding-bottom: 3rem; color:var(--text-secondary); font-size:0.7rem; letter-spacing:2px; font-weight:800;">
+        © 2026 FITFUTURE. NO LIMITS.
+    </div>
+
+    <!-- Integrate original functionality -->
+    <script src="assets/js/auth.js"></script>
+</body>
+</html>

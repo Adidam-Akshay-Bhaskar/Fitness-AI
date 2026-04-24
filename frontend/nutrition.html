@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUEL_MATRIX | GENESIS_PROTOCOL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/kinetic-noir.css">
+    <style>
+        :root {
+            --noir-accent: #d4ff00;
+            --noir-bg: #050505;
+            --noir-card: rgba(15, 15, 20, 0.6);
+            --noir-border: rgba(255, 255, 255, 0.08);
+            --macro-p: #00ff88;
+            --macro-c: #00ccff;
+            --macro-f: #ffaa00;
+            --glass-blur: blur(25px);
+        }
+
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            background: var(--noir-bg);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fuel-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.12) saturate(0.4);
+            z-index: -1;
+        }
+
+        .fuel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(212, 255, 0, 0.04), transparent 70%),
+                        linear-gradient(to bottom, transparent, var(--noir-bg));
+            z-index: -1;
+        }
+
+        .fuel-container {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .fuel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--noir-border);
+        }
+
+        .fuel-header .status-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .fuel-header .status {
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: var(--noir-accent);
+            letter-spacing: 3px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .fuel-header .status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--noir-accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--noir-accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .fuel-header .title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .energy-hud {
+            text-align: right;
+        }
+
+        .energy-value {
+            font-size: 3rem;
+            font-weight: 950;
+            line-height: 1;
+            color: white;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+
+        .energy-label {
+            font-size: 0.6rem;
+            font-weight: 900;
+            opacity: 0.4;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .fuel-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        .fuel-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* MACRO SECTION */
+        .macro-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .glass-card {
+            background: var(--noir-card);
+            border: 1px solid var(--noir-border);
+            border-radius: 24px;
+            backdrop-filter: var(--glass-blur);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+        }
+
+        .macro-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--color);
+            box-shadow: 0 0 15px var(--color);
+        }
+
+        .card-label {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .card-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+        }
+
+        .card-value span { font-size: 0.8rem; opacity: 0.4; }
+
+        .progress-track {
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color);
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--color);
+            transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+            width: 0;
+        }
+
+        /* ANALYTICS SECTION */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+        }
+
+        /* WATER TRACKER */
+        .water-tracker {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .water-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-water {
+            background: rgba(0, 204, 255, 0.1);
+            border: 1px solid rgba(0, 204, 255, 0.2);
+            color: #00ccff;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-water:hover {
+            background: rgba(0, 204, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .water-display {
+            flex: 1;
+        }
+
+        .water-bar {
+            height: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .water-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066ff, #00ccff);
+            width: 0%;
+            transition: 1s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.5);
+        }
+
+        /* LOG SECTION */
+        .history-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .meal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--noir-border);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            transition: 0.3s;
+        }
+
+        .meal-item:hover {
+            background: rgba(212, 255, 0, 0.03);
+            border-color: rgba(212, 255, 0, 0.2);
+        }
+
+        .meal-meta h4 { margin: 0; font-size: 0.9rem; text-transform: uppercase; color: #fff; }
+        .meal-meta span { font-size: 0.65rem; color: rgba(255,255,255,0.4); font-weight: 700; }
+        
+        .meal-macros {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .tag {
+            font-size: 0.55rem;
+            font-weight: 900;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* SIDEBAR FORM */
+        .fuel-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .sidebar-card {
+            background: var(--noir-card);
+            border: 1px solid var(--noir-border);
+            border-radius: 24px;
+            backdrop-filter: var(--glass-blur);
+            padding: 2rem;
+        }
+
+        .form-title {
+            font-size: 0.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            color: var(--noir-accent);
+        }
+
+        .input-box { margin-bottom: 1.2rem; }
+        .input-box label {
+            display: block;
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-box input, .input-box select {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 0.9rem 1.2rem;
+            color: white;
+            font-family: inherit;
+            font-weight: 600;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus {
+            border-color: var(--noir-accent);
+            background: rgba(212, 255, 0, 0.05);
+            box-shadow: 0 0 20px rgba(212, 255, 0, 0.1);
+        }
+
+        .macro-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--noir-accent);
+            color: black;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(212, 255, 0, 0.3);
+        }
+
+        /* QUICK ACTIONS */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+        }
+
+        .btn-quick {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--noir-border);
+            padding: 1rem;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .btn-quick i { color: var(--noir-accent); font-size: 1rem; }
+
+        .btn-quick:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* DYNAMIC ITEMS */
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .item-tag {
+            background: rgba(212, 255, 0, 0.1);
+            border: 1px solid rgba(212, 255, 0, 0.2);
+            color: var(--noir-accent);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .item-tag i { cursor: pointer; opacity: 0.6; }
+        .item-tag i:hover { opacity: 1; }
+
+        .meal-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn-action {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-action:hover { color: var(--noir-accent); }
+        .btn-action.delete:hover { color: #ff4444; }
+
+        /* AI INSIGHTS */
+        .ai-panel {
+            background: linear-gradient(135deg, rgba(212, 255, 0, 0.05), transparent);
+            border: 1px solid rgba(212, 255, 0, 0.15);
+        }
+
+        .ai-text {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .fuel-grid { grid-template-columns: 1fr; }
+            .fuel-sidebar { order: -1; }
+        }
+
+        @media (max-width: 768px) {
+            .macro-row { grid-template-columns: 1fr; }
+            .analytics-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="fuel-bg"></div>
+    <div class="fuel-overlay"></div>
+
+    <div class="fuel-container">
+        <header class="fuel-header">
+            <div class="status-box">
+                <div class="status">NEURAL_LINK: ACTIVE</div>
+                <div class="title">FUEL_MATRIX</div>
+            </div>
+            <div class="energy-hud">
+                <div class="energy-value" id="total-cals">0</div>
+                <div class="energy-label">TOTAL_ENERGY_KCAL</div>
+            </div>
+        </header>
+
+        <main class="fuel-grid">
+            <div class="fuel-main">
+                <!-- Macros -->
+                <div class="macro-row">
+                    <div class="glass-card macro-card" style="--color: var(--macro-p)">
+                        <span class="card-label">PROTEIN_CALIBRATION</span>
+                        <div class="card-value" id="val-protein">0 <span>G</span></div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="prog-protein"></div>
+                        </div>
+                    </div>
+                    <div class="glass-card macro-card" style="--color: var(--macro-c)">
+                        <span class="card-label">CARB_DISPLACEMENT</span>
+                        <div class="card-value" id="val-carbs">0 <span>G</span></div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="prog-carbs"></div>
+                        </div>
+                    </div>
+                    <div class="glass-card macro-card" style="--color: var(--macro-f)">
+                        <span class="card-label">LIPID_STORAGE</span>
+                        <div class="card-value" id="val-fats">0 <span>G</span></div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="prog-fats"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics -->
+                <div class="analytics-grid">
+                    <div class="glass-card">
+                        <span class="card-label">MACRO_DISTRIBUTION</span>
+                        <div class="chart-container">
+                            <canvas id="macroChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card water-tracker">
+                        <span class="card-label">HYDRATION_LEVELS</span>
+                        <div class="water-controls">
+                            <button class="btn-water" onclick="addWater(250)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <div class="water-display">
+                                <div class="card-value"><span id="water-val">0</span> <span>ML</span></div>
+                                <div class="water-bar">
+                                    <div class="water-fill" id="water-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span style="font-size: 0.6rem; opacity: 0.4;">TARGET: 3000ML</span>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="glass-card history-section">
+                    <span class="card-label">MISSION_FUEL_LOG</span>
+                    <div id="meal-list" class="history-list">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+            </div>
+
+            <aside class="fuel-sidebar">
+                <!-- Input Form -->
+                <div class="sidebar-card">
+                    <h3 class="form-title" id="form-title">COMMIT_FUEL_SEQUENCE</h3>
+                    <form id="nutrition-form">
+                        <input type="hidden" id="editing-id" value="">
+                        <div class="input-box">
+                            <label>SEQUENCE_TYPE</label>
+                            <select id="meal_type" required>
+                                <option value="breakfast">ALPHA_FUEL (BREAKFAST)</option>
+                                <option value="lunch">CORE_LOAD (LUNCH)</option>
+                                <option value="dinner">RECOVERY_UNIT (DINNER)</option>
+                                <option value="snack">RECON_SNACK (SNACK)</option>
+                            </select>
+                        </div>
+                        <div class="input-box">
+                            <label>ADD_ITEM_TO_SEQUENCE</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="item_input" placeholder="E.G. CHICKEN_KINETIC">
+                                <button type="button" class="btn-water" style="width: 45px; height: 45px; border-radius: 12px;" onclick="addFoodItem()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="added-items" class="items-list">
+                            <!-- Tags added here -->
+                        </div>
+                        <div class="input-box">
+                            <label>TOTAL_ENERGY (KCAL)</label>
+                            <input type="number" id="calories" placeholder="0" required>
+                        </div>
+                        <div class="macro-inputs-grid">
+                            <div class="input-box">
+                                <label>P (G)</label>
+                                <input type="number" id="protein" placeholder="0" required>
+                            </div>
+                            <div class="input-box">
+                                <label>C (G)</label>
+                                <input type="number" id="carbs" placeholder="0" required>
+                            </div>
+                            <div class="input-box">
+                                <label>F (G)</label>
+                                <input type="number" id="fats" placeholder="0" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" id="btn-submit">INITIALIZE_INGESTION</button>
+                        <button type="button" id="btn-cancel-edit" class="btn-submit" style="background: rgba(255,255,255,0.05); color: white; margin-top: 0.5rem; display: none;" onclick="cancelEdit()">CANCEL_EDIT</button>
+                    </form>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="sidebar-card">
+                    <span class="card-label">QUICK_SYNC_MODULES</span>
+                    <div class="quick-actions">
+                        <button class="btn-quick" onclick="quickAdd('PROTEIN_SHAKE', 120, 25, 5, 2)">
+                            <i class="fas fa-bolt"></i> P_SHAKE
+                        </button>
+                        <button class="btn-quick" onclick="quickAdd('COFFEE_BLACK', 5, 0, 0, 0)">
+                            <i class="fas fa-coffee"></i> C_BLACK
+                        </button>
+                        <button class="btn-quick" onclick="quickAdd('GREEK_YOGURT', 150, 15, 10, 0)">
+                            <i class="fas fa-egg"></i> YOGURT
+                        </button>
+                        <button class="btn-quick" onclick="quickAdd('BANANA_UNIT', 105, 1, 27, 0)">
+                            <i class="fas fa-leaf"></i> BANANA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="sidebar-card ai-panel">
+                    <span class="card-label">TACTICAL_AI_ADVISOR</span>
+                    <p class="ai-text" id="ai-insight">Analyzing nutritional trajectory... Fuel levels currently within operational parameters. Increase protein intake for muscle synthesis.</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let macroChart = null;
+        let waterIntake = 0;
+        const WATER_TARGET = 3000;
+        let currentFoodItems = [];
+
+        // Initialize Charts
+        function initCharts() {
+            const ctx = document.getElementById('macroChart').getContext('2d');
+            macroChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Protein', 'Carbs', 'Fats'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#00ff88', '#00ccff', '#ffaa00'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '80%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function addFoodItem(name = null) {
+            const input = document.getElementById('item_input');
+            const itemName = name || input.value.trim().toUpperCase();
+            if (itemName && !currentFoodItems.includes(itemName)) {
+                currentFoodItems.push(itemName);
+                renderItems();
+                if (!name) input.value = '';
+            }
+        }
+
+        function removeFoodItem(name) {
+            currentFoodItems = currentFoodItems.filter(item => item !== name);
+            renderItems();
+        }
+
+        function renderItems() {
+            const container = document.getElementById('added-items');
+            container.innerHTML = currentFoodItems.map(item => `
+                <div class="item-tag">
+                    ${item}
+                    <i class="fas fa-times" onclick="removeFoodItem('${item}')"></i>
+                </div>
+            `).join('');
+        }
+
+        async function loadFuelMatrix() {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/api/nutrition`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('meal-list');
+                    list.innerHTML = '';
+                    
+                    let tp=0, tc=0, tf=0, tk=0;
+                    
+                    data.forEach(meal => {
+                        if (!meal || !meal.meal_type) return;
+                        
+                        const p = parseFloat(meal.total_protein || meal.protein || 0);
+                        const c = parseFloat(meal.total_carbs || meal.carbs || 0);
+                        const f = parseFloat(meal.total_fats || meal.fats || 0);
+                        const k = parseFloat(meal.total_calories || meal.calories || 0);
+                        
+                        tp += p; tc += c; tf += f; tk += k;
+                        
+                        const items = meal.food_items || ['UNNAMED_FUEL'];
+                        const mName = items.join(', ').toUpperCase();
+                        const mType = (meal.meal_type || 'SNACK').toString().toUpperCase();
+                        const mTime = new Date(meal.log_date || meal.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        list.innerHTML += `
+                            <div class="meal-item">
+                                <div class="meal-meta">
+                                    <h4>${mName}</h4>
+                                    <span>${mType} • ${mTime}</span>
+                                    <div class="meal-macros">
+                                        <span class="tag">P:${p}G</span>
+                                        <span class="tag">C:${c}G</span>
+                                        <span class="tag">F:${f}G</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 1.1rem; font-weight: 900; color: var(--noir-accent);">+${k}</div>
+                                        <div style="font-size: 0.4rem; opacity: 0.4; font-weight: 900;">KCAL</div>
+                                    </div>
+                                    <div class="meal-actions">
+                                        <button class="btn-action" onclick="prepareEdit('${meal.id}', '${meal.meal_type}', ${k}, ${p}, ${c}, ${f}, '${items.join('|')}')"><i class="fas fa-edit"></i></button>
+                                        <button class="btn-action delete" onclick="deleteMeal('${meal.id}')"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    updateUI(tk, tp, tc, tf);
+                }
+            } catch (err) { console.error("Fuel Sync Failed", err); }
+        }
+
+        function updateUI(tk, tp, tc, tf) {
+            document.getElementById('total-cals').innerText = Math.round(tk);
+            document.getElementById('val-protein').innerHTML = `${Math.round(tp)} <span>G</span>`;
+            document.getElementById('val-carbs').innerHTML = `${Math.round(tc)} <span>G</span>`;
+            document.getElementById('val-fats').innerHTML = `${Math.round(tf)} <span>G</span>`;
+
+            // Update Progress Bars
+            document.getElementById('prog-protein').style.width = Math.min((tp / 200) * 100, 100) + '%';
+            document.getElementById('prog-carbs').style.width = Math.min((tc / 300) * 100, 100) + '%';
+            document.getElementById('prog-fats').style.width = Math.min((tf / 80) * 100, 100) + '%';
+
+            // Update Chart
+            if (macroChart) {
+                macroChart.data.datasets[0].data = [tp, tc, tf];
+                macroChart.update();
+            }
+
+            // AI Insight Logic
+            const insight = document.getElementById('ai-insight');
+            if (tk > 2500) insight.innerText = "CRITICAL_LEVELS: Calorie threshold exceeded. Tactical metabolic adjustment required.";
+            else if (tp < 100) insight.innerText = "WARNING: Amino acid levels suboptimal. Prioritize protein-rich sequences.";
+            else insight.innerText = "OPTIMAL: Nutritional trajectory looks stable. Keep maintaining the current cadence.";
+        }
+
+        function prepareEdit(id, type, cal, p, c, f, items) {
+            document.getElementById('editing-id').value = id;
+            document.getElementById('meal_type').value = type;
+            document.getElementById('calories').value = cal;
+            document.getElementById('protein').value = p;
+            document.getElementById('carbs').value = c;
+            document.getElementById('fats').value = f;
+            
+            currentFoodItems = items.split('|');
+            renderItems();
+
+            document.getElementById('form-title').innerText = 'UPDATE_FUEL_SEQUENCE';
+            document.getElementById('btn-submit').innerText = 'APPLY_CORRECTIONS';
+            document.getElementById('btn-cancel-edit').style.display = 'block';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            document.getElementById('editing-id').value = '';
+            document.getElementById('nutrition-form').reset();
+            currentFoodItems = [];
+            renderItems();
+            document.getElementById('form-title').innerText = 'COMMIT_FUEL_SEQUENCE';
+            document.getElementById('btn-submit').innerText = 'INITIALIZE_INGESTION';
+            document.getElementById('btn-cancel-edit').style.display = 'none';
+        }
+
+        async function deleteMeal(id) {
+            if (!confirm('CONFIRM_DELETION? This action is irreversible.')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`${API_BASE}/api/nutrition/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) loadFuelMatrix();
+            } catch (err) { console.error("Deletion Failed", err); }
+        }
+
+        function addWater(amount) {
+            waterIntake += amount;
+            document.getElementById('water-val').innerText = waterIntake;
+            const percentage = Math.min((waterIntake / WATER_TARGET) * 100, 100);
+            document.getElementById('water-fill').style.width = percentage + '%';
+            
+            // Local storage persistence for session
+            localStorage.setItem('water_intake', waterIntake);
+        }
+
+        async function quickAdd(name, cal, p, c, f) {
+            const token = localStorage.getItem('token');
+            const payload = {
+                mealType: 'snack',
+                foodItems: [name],
+                totalCalories: cal,
+                totalProtein: p,
+                totalCarbs: c,
+                totalFats: f
+            };
+            try {
+                const res = await fetch(`${API_BASE}/api/nutrition`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) loadFuelMatrix();
+            } catch (err) { console.error("Quick Add Failed", err); }
+        }
+
+        document.getElementById('nutrition-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const editingId = document.getElementById('editing-id').value;
+            
+            if (currentFoodItems.length === 0) {
+                alert("ERROR: No items defined in sequence.");
+                return;
+            }
+
+            const payload = {
+                mealType: document.getElementById('meal_type').value,
+                foodItems: currentFoodItems,
+                totalCalories: parseFloat(document.getElementById('calories').value),
+                totalProtein: parseFloat(document.getElementById('protein').value),
+                totalCarbs: parseFloat(document.getElementById('carbs').value),
+                totalFats: parseFloat(document.getElementById('fats').value)
+            };
+
+            try {
+                const url = editingId ? `${API_BASE}/api/nutrition/${editingId}` : `${API_BASE}/api/nutrition`;
+                const method = editingId ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    cancelEdit();
+                    loadFuelMatrix();
+                }
+            } catch (err) { console.error("Fuel Commit Failed", err); }
+        });
+
+        // Load persisted water
+        const savedWater = localStorage.getItem('water_intake');
+        if (savedWater) {
+            waterIntake = parseInt(savedWater);
+            addWater(0); // Trigger update
+        }
+
+        initCharts();
+        loadFuelMatrix();
+    </script>
+</body>
+</html>
