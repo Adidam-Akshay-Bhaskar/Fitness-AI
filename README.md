@@ -91,9 +91,3 @@ The heart of the Genesis Protocol is the **Arnold V5.5 Tactical Coach**. Powered
 
 ---
 
-## 🛡️ License
-Genesis Protocol is protected under the **ISC License**.
-
----
-
-> *"The resistance you fight physically in the gym and the resistance you fight in life can only build a strong character."* — **Arnold V5.5 Tactical AI**
